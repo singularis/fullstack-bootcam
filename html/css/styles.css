@@ -1,0 +1,30 @@
+table {
+    text-align: left;
+}
+th,
+td {
+    padding: 10px;
+}
+body {
+    background-color: #C4DDFF
+}
+hr {
+    border-style: none;
+    background-color: #C4DDFF;
+    color: #7FB5FF;
+    border-top: 6px dotted;
+    height: 1px;
+    width: 5%;
+}
+img {
+    height: auto;
+}
+h1 {
+    color: #001D6E;
+}
+h2 {
+    color: #08236d;
+}
+h3 {
+    color: #192b5f;
+}

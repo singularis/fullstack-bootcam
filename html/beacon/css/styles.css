@@ -1,0 +1,27 @@
+body {
+    background-color: #FF7700;
+}
+h1 {
+    color: #E04D01;
+    font-size: 50px;
+}
+
+p {
+    color: #2A2550;
+}
+
+img:hover {
+    background-color: #251D3A;
+}
+.bacon {
+    background-color: greenyellow;
+}
+.pig {
+    background-color: #255033;
+}
+.circle {
+    border-radius: 100%;
+}
+#heading {
+    color: #255033;
+}

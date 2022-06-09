@@ -40,6 +40,12 @@ app.get("/compose", function (req, res) {
   });
 })
 
+app.post("/compose", function (req, res) {
+      console.log(req.body.nextCompose);
+      res.redirect("/compose");
+});
+
+
 app.listen(8181, function () {
   console.log("server started")
 });

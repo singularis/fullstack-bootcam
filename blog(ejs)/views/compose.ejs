@@ -1,9 +1,16 @@
 <%- include('./partials/header.ejs') %>
 <h1>Compose</h1>
 <div class="box">
-    <form action="/compose" method="post" class="compose">
-        <input type="text" name="nextCompose" placeholder="Write your thoth's" autocomplete="off">
-        <button type="submit" name="compose">Publish</button>
-    </form>
-</div>
+    <form>
+        <div class="form-group">
+          <label for="title">Title</label>
+          <input type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default" name="nextCompose" placeholder="Write your title" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="post">Post</label>
+          <textarea class="form-control" id="exampleFormControlTextarea3" rows="7" placeholder="Write your title" autocomplete="off" name="nextPost"></textarea>
+        </div>
+        <button class="btn btn-primary" type="submit" name="compose">Publish</button>
+      </form>
+    </div>
 <%- include('./partials/footer.ejs') %>

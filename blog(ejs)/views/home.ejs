@@ -1,4 +1,22 @@
 <%- include('./partials/header.ejs') %>
 <h1>Home</h1>
-<p><%= blog %> </p>
+<p><%= start %> </p>
+<div class="box">
+    <% posts.forEach(post => {%>
+    <% if (post.nextCompose.length > 15) { nextCompose = post.nextCompose.substring(0, 15) + "..." } else ( nextCompose = post.nextCompose) %>
+    <form>
+        <div class="form-group">
+            <h1><%= nextCompose  %> <h1>
+        </div>
+        <div class="form-group">
+            <% if (post.nextPost.length > 100) { %>
+                <% { nextPost = post.nextPost.substring(0, 100)};%>
+                <p><%= nextPost %> <a href="/posts/<%=_.kebabCase(post.nextCompose)%>">Read more</a> </p>
+                <% } else {%>
+                    <p><%= nextPost %> </p>
+            <% } %>
+        </div>
+    </form>
+    <% }); %>
+</div>
 <%- include('./partials/footer.ejs') %>

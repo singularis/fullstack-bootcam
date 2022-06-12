@@ -3,6 +3,9 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
+const _ = require('lodash');
+const posts = [];
+var false_page = true;
 
 const homeStartingContent = "Lacus vel facilisis volutpat est velit egestas dui id ornare. Semper auctor neque vitae tempus quam. Sit amet cursus sit amet dictum sit amet justo. Viverra tellus in hac habitasse. Imperdiet proin fermentum leo vel orci porta. Donec ultrices tincidunt arcu non sodales neque sodales ut. Mattis molestie a iaculis at erat pellentesque adipiscing. Magnis dis parturient montes nascetur ridiculus mus mauris vitae ultricies. Adipiscing elit ut aliquam purus sit amet luctus venenatis lectus. Ultrices vitae auctor eu augue ut lectus arcu bibendum at. Odio euismod lacinia at quis risus sed vulputate odio ut. Cursus mattis molestie a iaculis at erat pellentesque adipiscing.";
 const aboutContent = "Hac habitasse platea dictumst vestibulum rhoncus est pellentesque. Dictumst vestibulum rhoncus est pellentesque elit ullamcorper. Non diam phasellus vestibulum lorem sed. Platea dictumst quisque sagittis purus sit. Egestas sed sed risus pretium quam vulputate dignissim suspendisse. Mauris in aliquam sem fringilla. Semper risus in hendrerit gravida rutrum quisque non tellus orci. Amet massa vitae tortor condimentum lacinia quis vel eros. Enim ut tellus elementum sagittis vitae. Mauris ultrices eros in cursus turpis massa tincidunt dui.";
@@ -16,10 +19,12 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 app.use(express.static("public"));
+app.locals._ = _;
 
 app.get("/", function (req, res) {
   res.render('home', {
-    blog: homeStartingContent
+    start: homeStartingContent,
+    posts: posts
   });
 })
 
@@ -27,6 +32,28 @@ app.get("/contact", function (req, res) {
   res.render('contact', {
     contact: contactContent
   });
+});
+
+app.get('/posts/:postLink/', (req, res) => {
+  posts.forEach(post => {
+    if (_.kebabCase(req.params.postLink) == _.kebabCase(post.nextCompose)) {
+      false_page = true; 
+      console.log("req.params.postLink")
+      console.log(_.kebabCase(req.params.postLink))
+      console.log("post.nextCompose")
+      console.log(_.kebabCase(post.nextCompose))
+      res.render('post', {
+        singleCompose: post.nextCompose,
+        singlePost: post.nextPost
+      });
+    } else {
+      false_page = false; 
+    }
+
+  });
+  if (false_page == false){
+    res.render('opd', {});
+  }
 })
 
 app.get("/about", function (req, res) {
@@ -36,13 +63,16 @@ app.get("/about", function (req, res) {
 })
 
 app.get("/compose", function (req, res) {
-  res.render('compose', {
-  });
+  res.render('compose', {});
 })
 
 app.post("/compose", function (req, res) {
-      console.log(req.body.nextCompose);
-      res.redirect("/compose");
+  const post = {
+    nextCompose: req.body.nextCompose,
+    nextPost: req.body.nextPost,
+  };
+  posts.push(post)
+  res.redirect("/");
 });
 
 

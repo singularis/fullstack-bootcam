@@ -13,7 +13,7 @@
                 <% { nextPost = post.nextPost.substring(0, 100)};%>
                 <p><%= nextPost %> <a href="/posts/<%=_.kebabCase(post.nextCompose)%>">Read more</a> </p>
                 <% } else {%>
-                    <p><%= nextPost %> </p>
+                    <p><%= post.nextPost %> </p>
             <% } %>
         </div>
     </form>

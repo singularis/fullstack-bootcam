@@ -2,6 +2,9 @@
 
 const express = require("express");
 const bodyParser = require("body-parser");
+const {
+  default: mongoose
+} = require("mongoose");
 const ejs = require("ejs");
 const _ = require('lodash');
 const posts = [];
@@ -11,7 +14,22 @@ const homeStartingContent = "Lacus vel facilisis volutpat est velit egestas dui 
 const aboutContent = "Hac habitasse platea dictumst vestibulum rhoncus est pellentesque. Dictumst vestibulum rhoncus est pellentesque elit ullamcorper. Non diam phasellus vestibulum lorem sed. Platea dictumst quisque sagittis purus sit. Egestas sed sed risus pretium quam vulputate dignissim suspendisse. Mauris in aliquam sem fringilla. Semper risus in hendrerit gravida rutrum quisque non tellus orci. Amet massa vitae tortor condimentum lacinia quis vel eros. Enim ut tellus elementum sagittis vitae. Mauris ultrices eros in cursus turpis massa tincidunt dui.";
 const contactContent = "Scelerisque eleifend donec pretium vulputate sapien. Rhoncus urna neque viverra justo nec ultrices. Arcu dui vivamus arcu felis bibendum. Consectetur adipiscing elit duis tristique. Risus viverra adipiscing at in tellus integer feugiat. Sapien nec sagittis aliquam malesuada bibendum arcu vitae. Consequat interdum varius sit amet mattis. Iaculis nunc sed augue lacus. Interdum posuere lorem ipsum dolor sit amet consectetur adipiscing elit. Pulvinar elementum integer enim neque. Ultrices gravida dictum fusce ut placerat orci nulla. Mauris in aliquam sem fringilla ut morbi tincidunt. Tortor posuere ac ut consequat semper viverra nam libero.";
 
+mongoose.connect("mongodb://localhost:27017/blogDB");
+
 const app = express();
+
+const postScheme = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, "No name specified"]
+  },
+  blog: {
+    type: String,
+    required: [true, "No blog specified"]
+  },
+});
+
+const Blog = mongoose.model("Blog", postScheme);
 
 app.set('view engine', 'ejs');
 
@@ -37,7 +55,7 @@ app.get("/contact", function (req, res) {
 app.get('/posts/:postLink/', (req, res) => {
   posts.forEach(post => {
     if (_.kebabCase(req.params.postLink) == _.kebabCase(post.nextCompose)) {
-      false_page = true; 
+      false_page = true;
       console.log("req.params.postLink")
       console.log(_.kebabCase(req.params.postLink))
       console.log("post.nextCompose")
@@ -47,11 +65,11 @@ app.get('/posts/:postLink/', (req, res) => {
         singlePost: post.nextPost
       });
     } else {
-      false_page = false; 
+      false_page = false;
     }
 
   });
-  if (false_page == false){
+  if (false_page == false) {
     res.render('opd', {});
   }
 })
@@ -73,6 +91,20 @@ app.post("/compose", function (req, res) {
   };
   posts.push(post)
   res.redirect("/");
+  console.log("I am from here")
+  console.log(req.body.nextCompose)
+  console.log(req.body.nextPost)
+  const mongoBlog = new Blog({
+    name: req.body.nextCompose,
+    blog: req.body.nextPost
+  })
+  Blog.create(mongoBlog, function (err) {
+    if (err) {
+      console.log(err)
+    } else {
+      console.log("Added default to mongo")
+    }
+  });
 });
 
 

@@ -2,7 +2,6 @@
 
 const express = require("express");
 const bodyParser = require("body-parser");
-const mongoos = require("mongoose");
 const _ = require('lodash');
 const {
   default: mongoose

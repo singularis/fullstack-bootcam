@@ -3,20 +3,20 @@
 <p><%= start %> </p>
 <div class="box">
     <% posts.forEach(post => {%>
-    <% if (post.nextCompose.length > 15) { nextCompose = post.nextCompose.substring(0, 15) + "..." } else ( nextCompose = post.nextCompose) %>
+    <% if (post.name.length > 15) { name = post.name.substring(0, 15) + "..." } else ( name = post.name) %>
     <form>
         <div class="form-group">
-            <h1><%= nextCompose  %> <h1>
+            <h1><%= name  %> <h1>
         </div>
         <div class="form-group">
-            <% if (post.nextPost.length > 100) { %>
-                <% { nextPost = post.nextPost.substring(0, 100)};%>
-                <p><%= nextPost %> <a href="/posts/<%=_.kebabCase(post.nextCompose)%>">Read more</a> </p>
+            <% if (post.blog.length > 100) { %>
+                <% { blog = post.blog.substring(0, 100)};%>
+                <p><%= blog %> <a href="/posts/<%=(post.id)%>">Read more</a> </p>
                 <% } else {%>
-                    <p><%= post.nextPost %> </p>
+                    <p><%= post.blog %> </p>
             <% } %>
         </div>
     </form>
     <% }); %>
 </div>
-<%- include('./partials/footer.ejs') %>
+<!-- <%- include('./partials/footer.ejs') %> -->

@@ -1,5 +1,10 @@
 //jshint esversion:6
-
+const dotenv = require('dotenv');
+dotenv.config();
+const mongoPasswd = process.env.MONGOPASSWD;
+const mongoUser = process.env.MONGOUSER;
+const mongoURL = process.env.MONGOURL;
+const port = process.env.PORT;
 const express = require("express");
 const bodyParser = require("body-parser");
 const {
@@ -14,7 +19,10 @@ const homeStartingContent = "Lacus vel facilisis volutpat est velit egestas dui 
 const aboutContent = "Hac habitasse platea dictumst vestibulum rhoncus est pellentesque. Dictumst vestibulum rhoncus est pellentesque elit ullamcorper. Non diam phasellus vestibulum lorem sed. Platea dictumst quisque sagittis purus sit. Egestas sed sed risus pretium quam vulputate dignissim suspendisse. Mauris in aliquam sem fringilla. Semper risus in hendrerit gravida rutrum quisque non tellus orci. Amet massa vitae tortor condimentum lacinia quis vel eros. Enim ut tellus elementum sagittis vitae. Mauris ultrices eros in cursus turpis massa tincidunt dui.";
 const contactContent = "Scelerisque eleifend donec pretium vulputate sapien. Rhoncus urna neque viverra justo nec ultrices. Arcu dui vivamus arcu felis bibendum. Consectetur adipiscing elit duis tristique. Risus viverra adipiscing at in tellus integer feugiat. Sapien nec sagittis aliquam malesuada bibendum arcu vitae. Consequat interdum varius sit amet mattis. Iaculis nunc sed augue lacus. Interdum posuere lorem ipsum dolor sit amet consectetur adipiscing elit. Pulvinar elementum integer enim neque. Ultrices gravida dictum fusce ut placerat orci nulla. Mauris in aliquam sem fringilla ut morbi tincidunt. Tortor posuere ac ut consequat semper viverra nam libero.";
 
-mongoose.connect("mongodb://localhost:27017/blogDB");
+
+const mongoConnect = "mongodb+srv://" + mongoUser + ":" + mongoPasswd + "@" + mongoURL + "/blogDB"
+
+mongoose.connect(mongoConnect);
 
 const app = express();
 
@@ -40,10 +48,18 @@ app.use(express.static("public"));
 app.locals._ = _;
 
 app.get("/", function (req, res) {
-  res.render('home', {
-    start: homeStartingContent,
-    posts: posts
+  Blog.find(function (err, returnData) {
+    if (err) {
+      console.log(err)
+    } else {
+      res.render('home', {
+        start: homeStartingContent,
+        posts: returnData
+      });
+      console.log(returnData._id) 
+    }
   });
+
 })
 
 app.get("/contact", function (req, res) {
@@ -53,25 +69,19 @@ app.get("/contact", function (req, res) {
 });
 
 app.get('/posts/:postLink/', (req, res) => {
-  posts.forEach(post => {
-    if (_.kebabCase(req.params.postLink) == _.kebabCase(post.nextCompose)) {
-      false_page = true;
-      console.log("req.params.postLink")
-      console.log(_.kebabCase(req.params.postLink))
-      console.log("post.nextCompose")
-      console.log(_.kebabCase(post.nextCompose))
-      res.render('post', {
-        singleCompose: post.nextCompose,
-        singlePost: post.nextPost
-      });
+  Blog.find({"_id": req.params.postLink}, function (err, returnData) {
+    if (err) {
+      res.render('opd', {});
     } else {
-      false_page = false;
-    }
+      console.log("here")
+      console.log(returnData[0].name)
+      res.render('post', {
+        singleCompose: returnData[0].name,
+        singlePost: returnData[0].blog
+      });
 
+    }
   });
-  if (false_page == false) {
-    res.render('opd', {});
-  }
 })
 
 app.get("/about", function (req, res) {
@@ -85,15 +95,9 @@ app.get("/compose", function (req, res) {
 })
 
 app.post("/compose", function (req, res) {
-  const post = {
-    nextCompose: req.body.nextCompose,
-    nextPost: req.body.nextPost,
-  };
-  posts.push(post)
-  res.redirect("/");
-  console.log("I am from here")
   console.log(req.body.nextCompose)
   console.log(req.body.nextPost)
+  //Mongo
   const mongoBlog = new Blog({
     name: req.body.nextCompose,
     blog: req.body.nextPost
@@ -102,12 +106,13 @@ app.post("/compose", function (req, res) {
     if (err) {
       console.log(err)
     } else {
-      console.log("Added default to mongo")
+      console.log("Added data to mongo")
+      res.redirect("/");
     }
   });
 });
 
 
-app.listen(8181, function () {
-  console.log("server started")
+app.listen(port, function () {
+  console.log("server started on port: ", port)
 });

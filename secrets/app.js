@@ -7,12 +7,16 @@ const port = process.env.PORT;
 const mongoPasswd = process.env.MONGOPASSWD;
 const mongoUser = process.env.MONGOUSER;
 const mongoURL = process.env.MONGOURL;
+const secret = process.env.SECRET
 const express = require("express");
-const encryption = require("mongoose-encryption");
 const bodyParser = require("body-parser");
+const session = require('express-session');
+const passport = require('passport');
+const passportLocalMongoose = require('passport-local-mongoose');
+
 const {
     default: mongoose
-  } = require("mongoose");
+} = require("mongoose");
 const ejs = require("ejs");
 const _ = require('lodash');
 var fs = require("fs");
@@ -22,25 +26,43 @@ const app = express();
 
 app.set('view engine', 'ejs');
 
-const mongoConnect = "mongodb+srv://" + mongoUser + ":" + mongoPasswd + "@" + mongoURL + "/userDB"
-
-mongoose.connect(mongoConnect);
-
-const userScheme = new mongoose.Schema ({
-    email: String, 
-    password: String
-});
-const secret = process.env.SECRET;
-
-userScheme.plugin(encryption, {secret: secret , encryptedFields: ['password']});
-
-const User = new mongoose.model("User", userScheme)
-
 app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(express.static("public"));
 app.locals._ = _;
+
+app.use(session({
+    secret: secret,
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        secure: true
+    }
+}))
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+const userScheme = new mongoose.Schema({
+    email: String,
+    password: String
+});
+
+const mongoConnect = "mongodb+srv://" + mongoUser + ":" + mongoPasswd + "@" + mongoURL + "/userDB"
+
+mongoose.connect(mongoConnect);
+
+userScheme.plugin(passportLocalMongoose);
+
+const User = new mongoose.model("User", userScheme);
+
+passport.use(User.createStrategy());
+
+// use static serialize and deserialize of model for passport session support
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
 
 
 https
@@ -68,33 +90,51 @@ app.get("/register", function (req, res) {
     res.render("register")
 })
 
-app.post("/register", function (req, res) {
-    const newUser = new User({
-        email: req.body.username,
-        password: req.body.password
-    })
-    newUser.save(function (err) {
-        if (err) {console.log(err)}
-        else {
-            res.render("secrets")
-            console.log("User added to DB ", req.body.username)
-        }
-    })
+app.get("/secrets", function(req, res){
+    if (req.isAuthenticated()) {
+        res.render("secrets");
+    } else {
+        res.redirect("/login")
+    }
 })
-app.post("/login", function (req, res) {
-    const username = req.body.username;
-    const password = req.body.password;
-    User.findOne({email: username}, function(err, foundUser) {
+
+app.post("/register", function (req, res) {
+
+    User.register({username: req.body.username}, req.body.password, function(err, user){
         if (err) {
             console.log(err);
-        } else 
-        {
-            if (foundUser) {
-                if (foundUser.password === password) {
-                    res.render("secrets")
-                }
-            }
+            res.redirect("/register");
+        } else {
+            passport.authenticate("local")(req, res, function(){
+                res.redirect("/secrets")
+            })
         }
     })
 
+
+})
+app.post("/login", function (req, res) {
+    const user = new User({
+        username: req.body.username,
+        password: req.body.password
+    })
+    req.login(user, function(err) {
+        if (err) {
+            console.log(err);
+        }
+        else 
+        {
+            passport.authenticate("local");
+            res.redirect("/secrets")
+        }
+        
+    })
+
+})
+
+app.get("/logout", function(req, res, next){
+    req.logout(function(err) {
+        if (err) { return next(err); }
+        res.redirect('/');
+      });
 })
